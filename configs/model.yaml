@@ -1,0 +1,15 @@
+seed: 42
+temporal_train_fraction: 0.8
+retrieval_k: 50
+ranking_k: 10
+decision_score:
+  relevance: 0.65
+  propensity: 0.20
+  expected_value: 0.15
+evaluation_gate:
+  metric: ndcg_at_k
+  minimum: 0.20
+exploration:
+  policy: epsilon_greedy
+  epsilon: 0.05
+

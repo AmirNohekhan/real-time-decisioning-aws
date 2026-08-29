@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.pytest-tmp*/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+data/generated/
+artifacts/
+.env
+*.tfstate*
+.terraform/
+.tools/
+.audit-cache/

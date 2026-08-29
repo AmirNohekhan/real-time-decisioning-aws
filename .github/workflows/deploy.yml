@@ -1,0 +1,28 @@
+name: Deploy AWS
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Protected GitHub environment
+        required: true
+        type: choice
+        options: [dev, staging, production]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  deploy:
+    if: ${{ vars.AWS_ROLE_ARN != '' }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform -chdir=infrastructure/terraform/environments/${{ inputs.environment }} init
+      - run: terraform -chdir=infrastructure/terraform/environments/${{ inputs.environment }} plan -out=tfplan
+      - run: terraform -chdir=infrastructure/terraform/environments/${{ inputs.environment }} apply -auto-approve tfplan
+

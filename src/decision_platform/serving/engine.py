@@ -34,6 +34,14 @@ class DecisionEngine:
         sources = {c.item_id: c.source for c in candidates}
         items = self.store.get_items(list(retrieval))
         items = items[items.available.astype(bool)].copy()
+        if items.empty:
+            return RecommendationResponse(
+                model_version=self.ranker.version,
+                experiment_assignment=assignment,
+                timestamp=datetime.now(UTC),
+                recommendations=[],
+                metadata={"candidate_count": 0, "policy": "epsilon_greedy", "epsilon": 0.0},
+            )
         user = dict(self.store.get_user(request.user_id))
         frame = build_inference_frame(user, items, request.context.model_dump(), retrieval)
         relevance = self.ranker.predict(frame)

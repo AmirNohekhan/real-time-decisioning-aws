@@ -2,13 +2,15 @@ from uuid import uuid4
 
 import numpy as np
 
-from decision_platform.contracts import InteractionEvent
+from decision_platform.contracts import InteractionEvent, RecommendationRequest
 from decision_platform.data.events import LocalEventStore
 from decision_platform.data.synthetic import generate_dataset
 from decision_platform.experimentation.core import analyze, assign, sample_size
-from decision_platform.features.store import point_in_time_counts
+from decision_platform.features.store import LocalFeatureStore, point_in_time_counts
 from decision_platform.policies.exploration import EpsilonGreedyPolicy
+from decision_platform.ranking.model import RankingModel
 from decision_platform.retrieval.strategies import CollaborativeRetriever, PopularityRetriever
+from decision_platform.serving.engine import DecisionEngine
 
 
 def test_synthetic_data_has_signal_and_valid_contracts() -> None:
@@ -51,6 +53,18 @@ def test_exploration_policy_is_reproducible_and_valid() -> None:
     second = policy.order(np.array([0.1, 0.8, 0.3]), 3)
     assert np.array_equal(first[0], second[0])
     assert np.all((first[1] > 0) & (first[1] <= 1))
+
+
+def test_recommend_returns_empty_list_when_no_items_available() -> None:
+    data = generate_dataset(10, 15, 200, seed=3)
+    data.items["available"] = False
+    store = LocalFeatureStore(data.users, data.items)
+    retriever = PopularityRetriever().fit(data.interactions, data.items)
+    ranker = RankingModel.create(seed=3)
+    engine = DecisionEngine(store, retriever, ranker)
+    response = engine.recommend(RecommendationRequest(user_id="u00001", k=5))
+    assert response.recommendations == []
+    assert response.metadata["candidate_count"] == 0
 
 
 def test_event_store_is_idempotent(tmp_path) -> None:

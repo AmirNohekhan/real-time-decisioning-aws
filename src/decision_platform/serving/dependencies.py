@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 from decision_platform.config import get_settings
+from decision_platform.data.events import LocalEventStore
 from decision_platform.data.synthetic import load_dataset
 from decision_platform.features.store import LocalFeatureStore
 from decision_platform.ranking.model import RankingModel
@@ -17,3 +18,8 @@ def get_engine() -> DecisionEngine:
     return DecisionEngine(
         LocalFeatureStore(dataset.users, dataset.items), retriever, ranker, settings.epsilon
     )
+
+
+@lru_cache
+def get_event_store() -> LocalEventStore:
+    return LocalEventStore(get_settings().data_dir / "outcomes.jsonl")

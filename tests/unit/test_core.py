@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import numpy as np
 
+from decision_platform.config import get_settings
 from decision_platform.contracts import InteractionEvent
 from decision_platform.data.events import LocalEventStore
 from decision_platform.data.synthetic import generate_dataset
@@ -9,6 +10,7 @@ from decision_platform.experimentation.core import analyze, assign, sample_size
 from decision_platform.features.store import point_in_time_counts
 from decision_platform.policies.exploration import EpsilonGreedyPolicy
 from decision_platform.retrieval.strategies import CollaborativeRetriever, PopularityRetriever
+from decision_platform.serving.dependencies import get_event_store
 
 
 def test_synthetic_data_has_signal_and_valid_contracts() -> None:
@@ -60,3 +62,19 @@ def test_event_store_is_idempotent(tmp_path) -> None:
     store = LocalEventStore(tmp_path / "events.jsonl")
     assert store.put(event)
     assert not store.put(event)
+
+
+def test_event_store_dependency_is_a_cached_singleton(tmp_path, monkeypatch) -> None:
+    # The API dependency must hand out one shared store, not a fresh instance
+    # per request: a fresh instance per request rebuilds its idempotency set
+    # from disk on every call and gives concurrent requests separate locks,
+    # so two racing duplicate events could both pass their own check and both
+    # get appended.
+    monkeypatch.setenv("DP_DATA_DIR", str(tmp_path))
+    get_settings.cache_clear()
+    get_event_store.cache_clear()
+    try:
+        assert get_event_store() is get_event_store()
+    finally:
+        get_settings.cache_clear()
+        get_event_store.cache_clear()

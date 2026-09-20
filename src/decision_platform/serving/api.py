@@ -2,14 +2,13 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
 
-from decision_platform.config import get_settings
 from decision_platform.contracts import (
     InteractionEvent,
     RecommendationRequest,
     RecommendationResponse,
 )
 from decision_platform.data.events import LocalEventStore
-from decision_platform.serving.dependencies import get_engine
+from decision_platform.serving.dependencies import get_engine, get_event_store
 from decision_platform.serving.engine import DecisionEngine
 
 app = FastAPI(title="Real-Time Decisioning API", version="1.0.0")
@@ -34,6 +33,7 @@ def recommend(
 
 
 @app.post("/v1/events", status_code=status.HTTP_202_ACCEPTED)
-def event(event: InteractionEvent) -> dict[str, bool]:
-    store = LocalEventStore(get_settings().data_dir / "outcomes.jsonl")
+def event(
+    event: InteractionEvent, store: Annotated[LocalEventStore, Depends(get_event_store)]
+) -> dict[str, bool]:
     return {"accepted": store.put(event)}

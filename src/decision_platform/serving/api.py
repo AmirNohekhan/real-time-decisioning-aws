@@ -16,8 +16,18 @@ app = FastAPI(title="Real-Time Decisioning API", version="1.0.0")
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "healthy"}
+def health() -> dict[str, bool | str]:
+    settings = get_settings()
+    dataset_ready = all(
+        (settings.data_dir / name).exists()
+        for name in ("users.csv", "items.csv", "interactions.csv")
+    )
+    model_ready = (settings.artifact_dir / "ranker.joblib").exists()
+    return {
+        "status": "healthy" if dataset_ready and model_ready else "degraded",
+        "dataset_ready": dataset_ready,
+        "model_ready": model_ready,
+    }
 
 
 @app.post("/v1/recommendations", response_model=RecommendationResponse)

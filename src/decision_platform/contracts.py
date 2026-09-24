@@ -48,11 +48,11 @@ class RecommendationResponse(BaseModel):
 
 class InteractionEvent(BaseModel):
     event_id: UUID = Field(default_factory=uuid4)
-    user_id: str
-    item_id: str
+    user_id: str = Field(min_length=1, max_length=128)
+    item_id: str = Field(min_length=1, max_length=128)
     event_type: EventType
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    session_id: str
+    session_id: str = Field(min_length=1, max_length=128)
     experiment_id: str | None = None
     assignment: str | None = None
     request_id: UUID | None = None

@@ -1,4 +1,4 @@
-.PHONY: setup data train evaluate serve demo test lint typecheck security terraform-validate clean
+.PHONY: setup data train evaluate serve demo test smoke lint typecheck security terraform-validate clean
 PYTHON ?= python
 setup:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -14,6 +14,8 @@ demo:
 	$(PYTHON) -m decision_platform.cli demo
 test:
 	$(PYTHON) -m pytest
+smoke:
+	$(PYTHON) scripts/smoke_api.py
 lint:
 	$(PYTHON) -m ruff check src tests
 typecheck:

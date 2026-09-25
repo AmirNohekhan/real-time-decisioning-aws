@@ -20,6 +20,8 @@ curl -X POST http://localhost:8000/v1/recommendations -H "Content-Type: applicat
 
 Individual stages are `make data`, `make train`, `make evaluate`, and `make test`. The demo creates 500 users, 300 items, 20,000 temporally ordered interactions, trains retrieval and ranking, evaluates the holdout, returns recommendations, and simulates exploration.
 
+With the API running (`make serve`), `make smoke` sends a real request and asserts a healthy 3-item response — useful as a quick post-deploy or post-`make serve` sanity check.
+
 ## Architecture
 
 ```mermaid

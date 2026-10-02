@@ -11,6 +11,8 @@ class EpsilonGreedyPolicy:
     def order(self, scores: np.ndarray, k: int) -> tuple[np.ndarray, np.ndarray]:
         if not 0 <= self.epsilon <= 1:
             raise ValueError("epsilon must be in [0, 1]")
+        if k < 0:
+            raise ValueError("k must be non-negative")
         rng = np.random.default_rng(self.seed)
         remaining = list(np.argsort(-scores))
         selected: list[int] = []

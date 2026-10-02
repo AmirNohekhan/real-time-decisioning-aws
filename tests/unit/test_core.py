@@ -60,3 +60,30 @@ def test_event_store_is_idempotent(tmp_path) -> None:
     store = LocalEventStore(tmp_path / "events.jsonl")
     assert store.put(event)
     assert not store.put(event)
+
+
+def test_exploration_policy_rejects_negative_k() -> None:
+    import pytest
+
+    from decision_platform.policies.exploration import EpsilonGreedyPolicy
+
+    with pytest.raises(ValueError):
+        EpsilonGreedyPolicy().order(np.array([0.1, 0.2]), -1)
+
+
+def test_population_stability_zero_for_identical_and_positive_for_shift() -> None:
+    from decision_platform.monitoring.metrics import population_stability
+
+    ref = np.linspace(0, 1, 500)
+    assert population_stability(ref, ref) < 1e-6
+    assert population_stability(ref, ref + 5) > 0.1
+
+
+def test_recommendation_health_empty_returns_zeros() -> None:
+    import pandas as pd
+
+    from decision_platform.monitoring.metrics import recommendation_health
+
+    catalog = pd.DataFrame({"item_id": [1], "category": ["a"], "popularity": [1.0]})
+    result = recommendation_health(pd.DataFrame(columns=["request_id", "item_id"]), catalog)
+    assert result == {"coverage": 0.0, "diversity": 0.0, "popularity_concentration": 0.0}

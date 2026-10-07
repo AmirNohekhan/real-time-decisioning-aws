@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 import numpy as np
+import pytest
 
 from decision_platform.contracts import InteractionEvent
 from decision_platform.data.events import LocalEventStore
@@ -60,3 +61,22 @@ def test_event_store_is_idempotent(tmp_path) -> None:
     store = LocalEventStore(tmp_path / "events.jsonl")
     assert store.put(event)
     assert not store.put(event)
+
+
+def test_exploration_propensities_sum_to_one_for_first_slot() -> None:
+    scores = np.array([0.1, 0.8, 0.3, 0.5])
+    for seed in range(20):
+        order, propensities = EpsilonGreedyPolicy(0.3, seed=seed).order(scores, 2)
+        assert len(set(order.tolist())) == len(order) == 2
+        assert propensities[0] >= 0.3 / len(scores)
+
+
+def test_zero_epsilon_policy_is_pure_greedy() -> None:
+    order, propensities = EpsilonGreedyPolicy(0.0).order(np.array([0.2, 0.9, 0.5]), 3)
+    assert order.tolist() == [1, 2, 0]
+    assert np.allclose(propensities, 1.0)
+
+
+def test_exploration_policy_rejects_invalid_epsilon() -> None:
+    with pytest.raises(ValueError):
+        EpsilonGreedyPolicy(1.5).order(np.array([0.1, 0.2]), 1)

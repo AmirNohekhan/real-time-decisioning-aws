@@ -104,7 +104,7 @@ docs/{architecture,decisions}              infrastructure/terraform/
 
 ## Quality gates
 
-`make lint`, `make typecheck`, `make test`, and `make security` run locally. CI adds coverage, dependency audit, Docker build, Terraform formatting/validation, and credential-free pipeline checks. Deployment workflows are environment protected and use GitHub OIDC.
+`make lint`, `make typecheck`, `make test`, `make security`, and `make terraform-validate` run locally; `make clean` removes generated data and artifacts. CI adds coverage, dependency audit, Docker build, Terraform formatting/validation, and credential-free pipeline checks. Deployment workflows are environment protected and use GitHub OIDC.
 
 ## Limitations and next steps
 

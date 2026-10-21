@@ -60,3 +60,12 @@ def test_event_store_is_idempotent(tmp_path) -> None:
     store = LocalEventStore(tmp_path / "events.jsonl")
     assert store.put(event)
     assert not store.put(event)
+
+
+def test_population_stability_handles_empty_input():
+    import numpy as np
+
+    from decision_platform.monitoring.metrics import population_stability
+
+    assert population_stability(np.array([]), np.array([1.0, 2.0])) == 0.0
+    assert population_stability(np.array([1.0, 2.0]), np.array([])) == 0.0

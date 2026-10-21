@@ -18,6 +18,8 @@ def recommendation_health(recommendations: pd.DataFrame, catalog: pd.DataFrame) 
 
 
 def population_stability(reference: np.ndarray, current: np.ndarray, bins: int = 10) -> float:
+    if len(reference) == 0 or len(current) == 0:
+        return 0.0
     edges = np.histogram_bin_edges(np.concatenate([reference, current]), bins=bins)
     p = np.histogram(reference, edges)[0].astype(float) + 1e-6
     q = np.histogram(current, edges)[0].astype(float) + 1e-6

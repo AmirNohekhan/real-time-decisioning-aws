@@ -3,6 +3,8 @@ import pandas as pd
 
 
 def ranking_metrics(frame: pd.DataFrame, scores: np.ndarray, k: int = 10) -> dict[str, float]:
+    if k <= 0:
+        raise ValueError("k must be positive")
     work = frame[["user_id", "label"]].copy()
     work["score"] = scores
     ndcg, ap, rr, precision, recall = [], [], [], [], []

@@ -1,6 +1,8 @@
 from uuid import uuid4
 
 import numpy as np
+import pandas as pd
+import pytest
 
 from decision_platform.contracts import InteractionEvent
 from decision_platform.data.events import LocalEventStore
@@ -8,6 +10,7 @@ from decision_platform.data.synthetic import generate_dataset
 from decision_platform.experimentation.core import analyze, assign, sample_size
 from decision_platform.features.store import point_in_time_counts
 from decision_platform.policies.exploration import EpsilonGreedyPolicy
+from decision_platform.ranking.metrics import ranking_metrics
 from decision_platform.retrieval.strategies import CollaborativeRetriever, PopularityRetriever
 
 
@@ -60,3 +63,14 @@ def test_event_store_is_idempotent(tmp_path) -> None:
     store = LocalEventStore(tmp_path / "events.jsonl")
     assert store.put(event)
     assert not store.put(event)
+
+
+def test_analyze_rejects_non_binary_outcomes() -> None:
+    with pytest.raises(ValueError, match="only 0 and 1"):
+        analyze(np.array([0, 1, 2]), np.array([0, 1, 1]))
+
+
+def test_ranking_metrics_rejects_non_positive_k() -> None:
+    frame = pd.DataFrame({"user_id": ["u1", "u1"], "label": [1, 0]})
+    with pytest.raises(ValueError, match="k must be positive"):
+        ranking_metrics(frame, np.array([0.9, 0.1]), k=0)

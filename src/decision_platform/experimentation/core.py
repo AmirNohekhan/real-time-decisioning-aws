@@ -27,6 +27,8 @@ class ExperimentResult:
 def analyze(control: np.ndarray, treatment: np.ndarray, alpha: float = 0.05) -> ExperimentResult:
     if not len(control) or not len(treatment):
         raise ValueError("both variants need observations")
+    if not np.isin(control, [0, 1]).all() or not np.isin(treatment, [0, 1]).all():
+        raise ValueError("binary experiment outcomes must contain only 0 and 1")
     p0, p1 = float(control.mean()), float(treatment.mean())
     effect = p1 - p0
     se = float(np.sqrt(p0 * (1 - p0) / len(control) + p1 * (1 - p1) / len(treatment)))

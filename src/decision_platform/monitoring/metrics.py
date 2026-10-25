@@ -18,6 +18,11 @@ def recommendation_health(recommendations: pd.DataFrame, catalog: pd.DataFrame) 
 
 
 def population_stability(reference: np.ndarray, current: np.ndarray, bins: int = 10) -> float:
+    """Drift score between two samples: squared Jensen-Shannon distance over shared histogram bins.
+
+    Returns 0.0 for identical distributions and approaches ln(2) (~0.69) for disjoint ones.
+    This is not the classic PSI statistic, so thresholds should be tuned for this scale.
+    """
     edges = np.histogram_bin_edges(np.concatenate([reference, current]), bins=bins)
     p = np.histogram(reference, edges)[0].astype(float) + 1e-6
     q = np.histogram(current, edges)[0].astype(float) + 1e-6
